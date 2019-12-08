@@ -1,0 +1,35 @@
+{{ define "index.tmpl" }}
+    <html>
+    <head>
+    </head>
+    <body>
+    <input type="text" name="qrcode_content" value="" placeholder="二维码">
+    <input type="submit" id="submit" value="提交">
+    <div id="image" style="margin-top:20px;"></div>
+    </body>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#submit").on("click", function () {
+                let content = $("input[name='qrcode_content']").val();
+                if (content == '') {
+                    return false;
+                }
+
+                $.ajax({
+                    type: 'get',
+                    dataType: 'json',
+                    url : '/qrCode/getQrcode',
+                    data: {'qrcode_content' : content},
+                    success: function (response) {
+                        if (response['code'] == 0) {
+                            let image = "<img src='" + response['qrCode_url'] + "' />"
+                            $("#image").append(image)
+                        }
+                    }
+                });
+            })
+        });
+    </script>
+    </html>
+{{ end }}
