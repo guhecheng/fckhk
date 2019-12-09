@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/boombuler/barcode/qr"
 	"github.com/gin-gonic/gin"
 	"image/png"
 	"net/http"
@@ -20,6 +21,7 @@ func main()  {
 	})
 
 	router.Static("/upload", "./upload")
+	router.Static("/static", "./static")
 
 	router.GET("/qrCode/getQrcode", func (c *gin.Context) {
 		qrcodeContent := c.Query("qrcode_content")
@@ -44,5 +46,28 @@ func main()  {
 		c.AsciiJSON(http.StatusOK, data)
 	})
 
-	router.Run(":80")
+	router.GET("/qrCode/getCode", func (c *gin.Context) {
+		qrcodeContent := c.Query("content")
+		fmt.Println(qrcodeContent)
+		qrCode, _ := qr.Encode(qrcodeContent, qr.M, qr.Auto)
+		fmt.Println(qrCode)
+		path := "./upload/qr_code.png"
+		file, _ := os.Create(path)
+		fmt.Println(file)
+		defer file.Close()
+
+		qrCode, _ = barcode.Scale(qrCode, 256, 256)
+		fmt.Println(qrCode)
+		png.Encode(file, qrCode)
+
+		data := map[string]interface{}{
+			"code": 0,
+			"qrCode_url" : "/upload/qr_code.png",
+		}
+
+		// 输出 : {"lang":"GO\u8bed\u8a00","tag":"\u003cbr\u003e"}
+		c.AsciiJSON(http.StatusOK, data)
+	})
+
+	router.Run(":8080")
 }
